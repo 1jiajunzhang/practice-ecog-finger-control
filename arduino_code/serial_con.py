@@ -4,10 +4,6 @@ import time
 SERIAL_PORT = "COM6"
 BAUD_RATE = 9600
 
-# 打开串口
-ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-time.sleep(2)
-
 # finger_state:
 # "close" -> 弯曲 / 10°
 # "open"  -> 伸直 / 90°
@@ -53,16 +49,13 @@ def control_finger(finger, finger_state):
 
     cmd = COMMAND_MAP[finger][finger_state]
 
-    ser.write(cmd.encode())
-    print(f"Sent: finger={finger}, state={finger_state}, command={cmd}")
+    with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser:
+        time.sleep(2)
+        ser.write(cmd.encode())
+        print(f"Sent: finger={finger}, state={finger_state}, command={cmd}")
 
-    time.sleep(0.1)
-
-    while ser.in_waiting:
-        response = ser.readline().decode(errors="ignore").strip()
-        if response:
-            print("Arduino:", response)
-
-
-def close_serial():
-    ser.close()
+        time.sleep(0.1)
+        while ser.in_waiting:
+            response = ser.readline().decode(errors="ignore").strip()
+            if response:
+                print("Arduino:", response)

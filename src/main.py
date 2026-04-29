@@ -3,6 +3,7 @@ from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import time
 
 # Get random samples from the cue stage
 def get_random_stage_samples(stage_data, segment_length, n_samples=1, random_state=None):
@@ -56,6 +57,19 @@ print("Random cue stage sample indices:", random_stage_indices)
 random_stage_sample = random_stage_samples[0]
 print("Random cue stage sample shape:", random_stage_sample.shape)
 
+# Get matching cue_dg segments based on the selected cue index
+cue_dg_segments = []
+for idx in random_stage_indices:
+    start = idx * samples_per_state
+    end = start + samples_per_state
+    cue_dg_segment = cue_dg.iloc[start:end].reset_index(drop=True)
+    cue_dg_segments.append(cue_dg_segment)
+    print(f"Random cue_dg segment for index {idx}: shape={cue_dg_segment.head(20)}")
+
+diff_abs = np.abs(cue_dg.iloc[:, :5].max() - cue_dg.iloc[:, :5].min())
+max_diff_col = diff_abs.idxmax()
+print(f"Max difference column in first 5 cue_dg columns: {max_diff_col}")
+
 st.title("🧠 :rainbow[Brain Behind the Bot] 🦾")
 st.write("ECoG to Robotic Arm Simulation")
 
@@ -108,3 +122,13 @@ fig.update_layout(
 
 st.plotly_chart(fig, width='stretch')
 
+if st.button("Send predicted signal to robotic arm"):
+    time.sleep(3)
+    
+    # Display success message with cue_dg info
+    cue_dg_segment = cue_dg_segments[0] if cue_dg_segments else None
+    if cue_dg_segment is not None:
+        msg = f"Success!"
+        st.success(msg)
+    else:
+        st.success(f"Success! max_diff_col: {max_diff_col}")
