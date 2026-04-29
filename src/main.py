@@ -60,7 +60,7 @@ st.title("🧠 :rainbow[Brain Behind the Bot] 🦾")
 st.write("ECoG to Robotic Arm Simulation")
 
 # Create slider to control animation
-n_frames = min(random_stage_sample.shape[0], 100)  # Limit frames for smooth animation
+n_frames = min(random_stage_sample.shape[0], 50)  # Reduce frames for faster animation
 frame_step = max(1, random_stage_sample.shape[0] // n_frames)
 
 # Build animated figure with Plotly
@@ -81,31 +81,30 @@ for i in range(0, random_stage_sample.shape[0], frame_step):
         )
     frames.append(go.Frame(data=frame_data))
 
-# Initial frame
-for ch in random_stage_sample.columns:
-    fig.add_trace(
-        go.Scatter(
-            x=[], y=[],
-            mode='lines',
-            name=f'Ch {ch}'
-        )
-    )
+# Initial frame - show first frame data
+first_frame_data = frames[0].data if frames else []
+for trace in first_frame_data:
+    fig.add_trace(trace)
 
 fig.frames = frames
 fig.update_layout(
     updatemenus=[{
         'type': 'buttons',
         'showactive': False,
+        'x': 0.5,
+        'y': 1.15,
+        'xanchor': 'center',
+        'yanchor': 'top',
         'buttons': [
-            {'label': '▶ Play', 'method': 'animate', 'args': [None, {'frame': {'duration': 50, 'redraw': True}, 'fromcurrent': True}]},
-            {'label': '⏸ Pause', 'method': 'animate', 'args': [[None], {'frame': {'duration': 0, 'redraw': False}, 'mode': 'immediate', 'transition': {'duration': 0}}]}
+            {'label': 'Send ECoG channel simulation', 'method': 'animate', 'args': [None, {'frame': {'duration': 10, 'redraw': True}, 'fromcurrent': True, 'mode': 'immediate'}]}
         ]
     }],
-    xaxis_title='Time (samples)',
+    xaxis_title='Downsampled Time',
     yaxis_title='ECoG Signal',
     height=400,
-    hovermode='x unified'
+    hovermode='x unified',
+    xaxis=dict(range=[0, samples_per_state])
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
